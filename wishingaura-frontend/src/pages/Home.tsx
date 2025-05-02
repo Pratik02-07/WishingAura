@@ -1,5 +1,15 @@
-import { Link } from 'react-router-dom';
-import { GiftIcon, SparklesIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { Link, useNavigate } from 'react-router-dom';
+import { GiftIcon, SparklesIcon, CalendarIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useEffect, useState } from 'react';
+
+interface Wish {
+  id: string;
+  recipientName: string;
+  createdAt: string;
+}
 
 const features = [
   {
@@ -20,6 +30,41 @@ const features = [
 ];
 
 const Home = () => {
+  const { user, signInWithGoogle, logout } = useAuth();
+  const navigate = useNavigate();
+  const [userWishes, setUserWishes] = useState<Wish[]>([]);
+  const [loadingWishes, setLoadingWishes] = useState(false);
+
+  useEffect(() => {
+    const fetchUserWishes = async () => {
+      if (user) {
+        setLoadingWishes(true);
+        try {
+          const q = query(collection(db, "wishes"), where("userId", "==", user.uid));
+          const querySnapshot = await getDocs(q);
+          const wishes = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Wish[];
+          setUserWishes(wishes);
+        } catch (error) {
+          console.error('Error fetching wishes:', error);
+        }
+        setLoadingWishes(false);
+      }
+    };
+
+    fetchUserWishes();
+  }, [user]);
+
+  const handleCreateWish = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    navigate('/create');
+  };
+
   return (
     <div className="space-y-12 md:space-y-24 py-6 md:py-12">
       {/* Hero Section */}
@@ -32,13 +77,13 @@ const Home = () => {
           Make someone's birthday extra special with personalized wishes, photos, and beautiful animations.
         </p>
         <div className="pt-4">
-          <Link 
-            to="/create" 
+          <button
+            onClick={handleCreateWish}
             className="btn btn-primary text-base md:text-lg px-6 md:px-8 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 inline-flex items-center"
           >
             Create Your First Wish
             <SparklesIcon className="icon-md ml-2" />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -71,12 +116,12 @@ const Home = () => {
         <p className="text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto text-sm md:text-base">
           Create your first birthday wish now and spread joy to your loved ones!
         </p>
-        <Link 
-          to="/create" 
+        <button
+          onClick={handleCreateWish}
           className="btn btn-primary text-base md:text-lg px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
         >
           Get Started
-        </Link>
+        </button>
       </div>
     </div>
   );

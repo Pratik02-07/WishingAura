@@ -123,15 +123,15 @@ const ViewWish = () => {
       : 'border-white/30';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#22223B] via-[#4A4E69] to-[#9A8C98] px-4 sm:px-20">
-      <div className={`relative w-full max-w-5xl min-w-[400px] min-h-[70vh] mx-auto rounded-3xl shadow-2xl bg-[#F2E9E4] backdrop-blur-lg border-4 ${borderColor} p-6 sm:p-12 md:p-16 flex flex-col justify-center items-center overflow-hidden box-content`}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#22223B] via-[#4A4E69] to-[#9A8C98] px-2 sm:px-4 md:px-8 overflow-x-hidden" style={{ minHeight: '110vh' }}>
+      <div className={`relative w-full max-w-4xl min-h-[70vh] mx-auto rounded-3xl shadow-2xl bg-[#F2E9E4] backdrop-blur-lg border-4 ${borderColor} p-2 sm:p-6 md:p-12 flex flex-col justify-center items-center overflow-hidden box-border`}>
         {/* Glow effect */}
-        <div className="absolute -inset-8 sm:-inset-12 rounded-3xl bg-[#9A8C98]/30 blur-2xl z-0 pointer-events-none"></div>
+        <div className="absolute -inset-4 sm:-inset-8 md:-inset-12 rounded-3xl bg-[#9A8C98]/30 blur-2xl z-0 pointer-events-none"></div>
         {/* Back button */}
-        <div className="absolute top-4 left-4 z-50">
+        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
           <Link 
             to="/"
-            className="inline-flex items-center bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-primary hover:text-secondary transition-colors shadow-md"
+            className="inline-flex items-center bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-full text-primary hover:text-secondary transition-colors shadow-md"
           >
             <ArrowLeftIcon className="icon-sm mr-2" />
             Back to Home
@@ -151,20 +151,19 @@ const ViewWish = () => {
         </div>
       </div>
       {/* Share and Create Buttons */}
-      <div className="flex flex-wrap justify-center gap-4 mt-8">
+      <div className="flex flex-wrap flex-col sm:flex-row justify-center gap-2 mt-8 w-full max-w-2xl px-2">
         <button 
           onClick={() => setShowShareOptions(!showShareOptions)}
-          className="btn btn-secondary rounded-full px-6 py-2 text-base shadow-lg hover:shadow-xl transition-all"
+          className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
         >
           <ShareIcon className="icon-sm mr-2" />
           Share This Wish
         </button>
-        
         {!shortUrl ? (
           <button
             onClick={() => generateTinyUrl(window.location.href)}
             disabled={generatingTinyUrl}
-            className="btn btn-secondary rounded-full px-6 py-2 text-base shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 w-full sm:w-auto"
           >
             <LinkIcon className="icon-sm mr-2" />
             {generatingTinyUrl ? "Generating..." : "Get TinyURL"}
@@ -176,33 +175,30 @@ const ViewWish = () => {
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             }}
-            className="btn btn-secondary rounded-full px-6 py-2 text-base shadow-lg hover:shadow-xl transition-all"
+            className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
           >
             {copied ? "Copied!" : "Copy TinyURL"}
           </button>
         )}
-        
         <a
           href={`https://wa.me/?text=${encodeURIComponent('Check out this birthday wish! ' + (shortUrl || window.location.href))}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn btn-success rounded-full px-6 py-2 text-base shadow-lg hover:shadow-xl transition-all"
+          className="btn btn-success rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
         >
           Share on WhatsApp
         </a>
-        
         <Link 
           to="/create" 
-          className="btn btn-primary rounded-full px-6 py-2 text-base shadow-lg hover:shadow-xl transition-all"
+          className="btn btn-primary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
         >
           <SparklesIcon className="icon-sm mr-2" />
           Create Another
         </Link>
       </div>
-      
       {/* Share Options Popup */}
       {showShareOptions && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 z-10 w-64">
+        <div className="absolute left-0 right-0 mx-auto mt-4 z-10 w-full max-w-xs">
           <SimpleShareOptions 
             onClose={() => setShowShareOptions(false)} 
             shortUrl={shortUrl || window.location.href}

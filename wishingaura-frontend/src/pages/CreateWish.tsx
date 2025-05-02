@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import WishDisplay from './WishDisplay';
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { useAuth } from '../context/AuthContext';
+import { createWish } from '../services/wishService';
 
 const templates = [
   { id: 1, name: 'Classic', preview: '🎂', description: 'Elegant and timeless design', bgClass: 'bg-gradient-to-r from-blue-50 to-purple-50', animation: 'animate-float' },
@@ -35,6 +37,7 @@ async function shortenWithTinyURL(longUrl: string) {
 
 const CreateWish = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [recipientName, setRecipientName] = useState('');
@@ -43,6 +46,7 @@ const CreateWish = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [music, setMusic] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Handle file upload from device
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,6 +122,13 @@ const CreateWish = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    if (!user) {
+      alert('Please sign in to create a wish');
+      setSubmitting(false);
+      return;
+    }
     
     // Create a wish object
     const wishData = {
@@ -129,13 +140,14 @@ const CreateWish = () => {
       photos,
       music,
       createdAt: new Date().toISOString(),
+      userId: user.uid,
     };
     
-    // Save to Firestore
-    const docRef = await addDoc(collection(db, "wishes"), wishData);
+    // Save to Firestore using service
+    const wishId = await createWish(wishData);
 
     // Generate the long URL for the wish
-    const longUrl = `${window.location.origin}/wish/${docRef.id}`;
+    const longUrl = `${window.location.origin}/wish/${wishId}`;
 
     // Get the short URL from TinyURL
     let shortUrl = '';
@@ -148,7 +160,8 @@ const CreateWish = () => {
     }
 
     // Navigate to the view page for this wish
-    navigate(`/wish/${docRef.id}`);
+    navigate(`/wish/${wishId}`);
+    setSubmitting(false);
   };
 
   // Cleanup object URLs when component unmounts
@@ -369,13 +382,12 @@ const CreateWish = () => {
               </button>
               
               {/* Submit Button */}
-              <button 
-                type="submit" 
-                className="btn btn-primary w-full sm:w-1/2 rounded-full py-3 md:py-4 text-base md:text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center"
-                disabled={!selectedTemplate || !message}
+              <button
+                type="submit"
+                className="btn btn-primary w-full py-3 mt-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+                disabled={submitting}
               >
-                <SparklesIcon className="icon-sm mr-2" />
-                Create Birthday Wish
+                {submitting ? 'Creating...' : 'Create Wish'}
               </button>
             </div>
           </form>

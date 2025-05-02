@@ -88,11 +88,11 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
   // Determine container classes based on fullScreen prop
   const containerClasses = fullScreen 
     ? "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn overflow-auto"
-    : "relative animate-scaleIn";
+    : "relative animate-scaleIn w-full";
     
   const wishClasses = fullScreen
     ? "w-full max-w-4xl mx-auto my-4 rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-500"
-    : "rounded-3xl shadow-xl overflow-hidden transform hover:shadow-2xl transition-all duration-300";
+    : "w-full rounded-3xl shadow-xl overflow-hidden transform hover:shadow-2xl transition-all duration-300";
 
   // Determine background color based on template or use a sophisticated default
   const bgColor = 'bg-gradient-to-r from-gray-900 to-gray-800';
@@ -106,24 +106,24 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
   };
   
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses + ' px-2'}>
       {/* Sophisticated particle system */}
       {showParticles && ParticleSystem && <ParticleSystem active={true} type={particleType} density={80} />}
       
       {/* Fallback background in case animations don't load */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-gray-900 to-gray-800 opacity-90"></div>
       
-      <div className={wishClasses}>
-        <div className={`p-6 sm:p-8 md:p-12 text-center space-y-6 md:space-y-8 min-h-[60vh] relative bg-gradient-to-r from-gray-900 to-gray-800`}>
+      <div className={wishClasses + ' w-full max-w-[95vw] sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto mt-4 border border-white/20 shadow-lg box-border rounded-xl sm:rounded-3xl'}>
+        <div className={`p-2 sm:p-4 md:p-8 text-center space-y-4 md:space-y-8 min-h-[60vh] relative bg-gradient-to-r from-gray-900 to-gray-800`}>
           {/* Close button */}
           {(isPreview || fullScreen) && onClose && (
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-20"
+              className="absolute top-2 right-2 bg-white/80 p-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-20 h-10 w-10 flex items-center justify-center mt-4"
               aria-label="Close wish preview"
               title="Close wish preview"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -154,8 +154,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
           {/* Main content with sophisticated animations */}
           <div className="relative z-10">
             {/* Animated heading with sophisticated text effect */}
-            <div className="mb-8 md:mb-12">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
+            <div className="mb-6 md:mb-12">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
                 {AnimatedText ? (
                   <AnimatedText 
                     text={recipientName ? `Happy Birthday, ${recipientName}!` : 'Happy Birthday!'} 
@@ -186,8 +186,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
             </div>
             
             {/* Message with elegant fade-in */}
-            <div className="relative backdrop-blur-sm bg-white/10 rounded-xl p-6 md:p-8 shadow-xl">
-              <p className="text-lg sm:text-xl md:text-2xl text-white leading-relaxed">
+            <div className="relative backdrop-blur-sm bg-white/10 rounded-xl p-4 md:p-8 shadow-xl">
+              <p className="text-base sm:text-xl md:text-2xl text-white leading-relaxed">
                 {AnimatedText ? (
                   <AnimatedText 
                     text={message || "Your message will appear here..."}
@@ -204,8 +204,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
 
             {/* Photos Grid with sophisticated entrance */}
             {photos.length > 0 && (
-              <div className="mt-10 md:mt-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              <div className="mt-8 md:mt-12 overflow-x-auto">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
                   {photos.map((photo, index) => (
                     <div 
                       key={index} 
@@ -227,8 +227,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
 
             {/* Sender Name with elegant animation */}
             {senderName && (
-              <div className="mt-10 md:mt-12">
-                <p className="text-base md:text-lg text-white/80 italic">
+              <div className="mt-8 md:mt-12">
+                <p className="text-sm md:text-lg text-white/80 italic">
                   {AnimatedText ? (
                     <AnimatedText 
                       text={`With love from ${senderName}`}
