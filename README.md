@@ -131,3 +131,40 @@ Email: [Pratikpatil00005@gmail.com]
 
 GitHub: [https://github.com/Pratik02-07]
 
+wishingaura/
+│
+├── wishingaura-frontend/            # Vite + React (JS or TS)
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── context/
+│   │   ├── services/
+│   │   ├── router/
+│   │   ├── styles/
+│   │   ├── App.jsx or App.tsx
+│   │   ├── main.jsx or main.tsx
+│   │   └── config.js or config.ts
+│   ├── tailwind.config.js
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+│
+├── wishingaura-backend/             # Node.js + Express
+│   ├── controllers/
+│   ├── routes/
+│   ├── models/
+│   ├── middleware/
+│   ├── services/
+│   ├── config/
+│   ├── jobs/
+│   ├── utils/
+│   ├── uploads/
+│   ├── .env
+│   ├── index.js
+│   ├── package.json
+│   └── README.md
+│
+├── README.md                        # Project overview
+└── .gitignore
