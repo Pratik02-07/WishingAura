@@ -45,7 +45,7 @@ const CreateWish = () => {
   const [showPreview, setShowPreview] = useState(false);
 
   // Handle file upload from device
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
     
@@ -58,7 +58,7 @@ const CreateWish = () => {
       return;
     }
     
-    // Process each file
+    const uploadedUrls: string[] = [];
     for (let i = 0; i < filesToProcess; i++) {
       const file = files[i];
       
@@ -68,9 +68,48 @@ const CreateWish = () => {
         continue;
       }
       
-      // Create a URL for the file
-      const imageUrl = URL.createObjectURL(file);
-      setPhotos(prevPhotos => [...prevPhotos, imageUrl]);
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert(`File ${file.name} is not an image. Please upload only image files.`);
+        continue;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'wishingaura_upload');
+        formData.append('cloud_name', 'dslmp0cde');
+        
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/dslmp0cde/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+            mode: 'cors',
+            credentials: 'omit'
+          }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Cloudinary upload error:', errorData);
+          throw new Error(`Upload failed: ${errorData.error?.message || 'Unknown error'}`);
+        }
+        
+        const data = await response.json();
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
+        } else {
+          throw new Error('No secure URL returned from Cloudinary');
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert(`Failed to upload ${file.name}. Please try again.`);
+      }
+    }
+    
+    if (uploadedUrls.length > 0) {
+      setPhotos(prev => [...prev, ...uploadedUrls]);
     }
     
     // Reset the input value so the same file can be selected again

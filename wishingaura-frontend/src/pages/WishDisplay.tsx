@@ -120,6 +120,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
             <button 
               onClick={onClose}
               className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-20"
+              aria-label="Close wish preview"
+              title="Close wish preview"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
