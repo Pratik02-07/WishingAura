@@ -5,6 +5,8 @@ import { SparklesIcon } from '@heroicons/react/24/solid';
 import WishDisplay from './WishDisplay';
 import { Confetti } from '../components/Animations';
 import SimpleShareOptions from '../components/SimpleShareOptions';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface WishTemplate {
   id: number;
@@ -37,34 +39,17 @@ const ViewWish = () => {
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    // In a real app, you would fetch this from an API
-    // For now, we'll get it from localStorage
-    const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
-    const foundWish = wishes.find((w: Wish) => w.id === id);
-    
-    if (foundWish) {
-      setWish(foundWish);
-      
-      // Show confetti animation when the wish is first loaded
-      setShowConfetti(true);
-      
-      // Create a more dramatic entrance with timed animations
-      // We don't need to clear this timeout since it only runs once on mount
-      setTimeout(() => {
-        // Add a dramatic entrance effect to the page
-        document.body.classList.add('overflow-hidden');
-        
-        // After 10 seconds, allow scrolling again
-        setTimeout(() => {
-          document.body.classList.remove('overflow-hidden');
-        }, 10000);
-      }, 500);
-    } else {
-      // If no wish is found, we could redirect to a 404 page
-      console.error('Wish not found');
-    }
-    
-    setLoading(false);
+    const fetchWish = async () => {
+      const docRef = doc(db, "wishes", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setWish({ id: docSnap.id, ...docSnap.data() });
+      } else {
+        setWish(null);
+      }
+      setLoading(false);
+    };
+    fetchWish();
   }, [id]);
 
   const handleShare = () => {

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { PhotoIcon, MusicalNoteIcon, ArrowLeftIcon, EyeIcon, HeartIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
 import WishDisplay from './WishDisplay';
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const templates = [
   { id: 1, name: 'Classic', preview: '🎂', description: 'Elegant and timeless design', bgClass: 'bg-gradient-to-r from-blue-50 to-purple-50', animation: 'animate-float' },
@@ -80,7 +82,6 @@ const CreateWish = () => {
     
     // Create a wish object
     const wishData = {
-      id: generateWishId(),
       template: selectedTemplate ? templates.find(t => t.id === selectedTemplate) : null,
       message,
       recipientName,
@@ -91,13 +92,11 @@ const CreateWish = () => {
       createdAt: new Date().toISOString(),
     };
     
-    // Save wish to localStorage
-    const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
-    wishes.push(wishData);
-    localStorage.setItem('wishes', JSON.stringify(wishes));
+    // Save to Firestore
+    const docRef = await addDoc(collection(db, "wishes"), wishData);
 
     // Generate the long URL for the wish
-    const longUrl = `${window.location.origin}/wish/${wishData.id}`;
+    const longUrl = `${window.location.origin}/wish/${docRef.id}`;
 
     // Get the short URL from TinyURL
     let shortUrl = '';
@@ -110,7 +109,7 @@ const CreateWish = () => {
     }
 
     // Navigate to the view page for this wish
-    navigate(`/wish/${wishData.id}`);
+    navigate(`/wish/${docRef.id}`);
   };
 
   // Cleanup object URLs when component unmounts
