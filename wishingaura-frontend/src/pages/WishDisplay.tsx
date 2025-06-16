@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon } from '@heroicons/react/24/solid';
+import { Heart, Sparkles, X } from 'lucide-react';
 import { 
   ParticleSystem, 
   GradientBackground, 
@@ -87,8 +86,8 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
 
   // Determine container classes based on fullScreen prop
   const containerClasses = fullScreen 
-    ? "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn overflow-auto"
-    : "relative animate-scaleIn w-full";
+    ? "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fade-in overflow-auto"
+    : "relative animate-scale-in w-full";
     
   const wishClasses = fullScreen
     ? "w-full max-w-4xl mx-auto my-4 rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-500"
@@ -123,9 +122,7 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
               aria-label="Close wish preview"
               title="Close wish preview"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-7 w-7 text-gray-600" />
             </button>
           )}
           
@@ -209,7 +206,7 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
                   {photos.map((photo, index) => (
                     <div 
                       key={index} 
-                      className="aspect-square overflow-hidden rounded-xl shadow-lg transform transition-all duration-700 animate-fadeIn"
+                      className="aspect-square overflow-hidden rounded-xl shadow-lg transform transition-all duration-700 animate-fade-in"
                       style={{ 
                         animationDelay: `${1.5 + (index * 0.2)}s` 
                       }}
@@ -263,4 +260,4 @@ const WishDisplay: React.FC<WishDisplayProps> = ({
   );
 };
 
-export default WishDisplay; 
+export default WishDisplay;
