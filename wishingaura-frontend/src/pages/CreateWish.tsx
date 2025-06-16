@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { ArrowRightIcon } from '@heroicons/react/24/solid';
+
 import { 
   PhotoIcon, 
   MusicalNoteIcon, 
