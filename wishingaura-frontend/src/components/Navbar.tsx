@@ -46,53 +46,67 @@ const Navbar = () => {
   }, [isDropdownOpen]);
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50 bg-background-dark">
-      <div className="container mx-auto px-4">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-white/20 shadow-soft">
+      <div className="container-fluid">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="text-xl md:text-2xl font-bold text-primary hover:text-primary/80 transition-colors duration-300 flex items-center">
-            <SparklesIcon className="icon-md mr-2" />
-            WishingAura
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2 text-xl md:text-2xl font-bold text-gradient hover:scale-105 transition-transform duration-300"
+          >
+            <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl shadow-lg">
+              <SparklesIcon className="icon-md text-white" />
+            </div>
+            <span>WishingAura</span>
           </Link>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               to="/" 
-              className="text-text-secondary hover:text-primary font-medium transition-colors duration-300 relative group"
+              className="relative text-slate-600 hover:text-indigo-600 font-medium transition-colors duration-300 group"
             >
               Home
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
             </Link>
+            
             <Link 
               to="/create" 
-              className="btn btn-primary px-6 py-2 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+              className="btn btn-primary"
             >
+              <SparklesIcon className="icon-sm" />
               Create Wish
             </Link>
+            
             {/* User Profile/Sign In */}
             {user ? (
-              <div className="relative ml-4" ref={dropdownRef}>
+              <div className="relative" ref={dropdownRef}>
                 <button
-                  className="flex items-center space-x-2 text-gray-700 hover:text-primary focus:outline-none"
+                  className="flex items-center space-x-2 p-2 rounded-xl hover:bg-slate-100 transition-colors duration-300 focus-ring"
                   onClick={() => setIsDropdownOpen((open) => !open)}
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen ? "true" : "false"}
                 >
-                  <UserCircleIcon className="h-8 w-8" />
-                  <span className="hidden md:inline">{user.displayName}</span>
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <UserCircleIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="hidden lg:inline font-medium text-slate-700">
+                    {user.displayName || 'User'}
+                  </span>
                 </button>
+                
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-48 glass-strong rounded-xl shadow-large py-2 animate-slideInDown">
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-slate-700 hover:bg-white/20 transition-colors duration-200"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       My Wishes
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                      className="block w-full text-left px-4 py-2 text-slate-700 hover:bg-white/20 transition-colors duration-200 disabled:opacity-50"
                       disabled={loggingOut}
                     >
                       {loggingOut ? 'Logging out...' : 'Logout'}
@@ -103,7 +117,7 @@ const Navbar = () => {
             ) : (
               <button
                 onClick={() => navigate('/login')}
-                className="btn btn-primary text-sm md:text-base px-4 md:px-6 py-2 rounded-full ml-4"
+                className="btn btn-outline"
               >
                 Sign in
               </button>
@@ -114,12 +128,12 @@ const Navbar = () => {
           <div className="md:hidden">
             <button 
               onClick={toggleMenu}
-              className="text-text-secondary hover:text-primary focus:outline-none"
+              className="p-2 rounded-xl hover:bg-slate-100 transition-colors duration-300 focus-ring"
             >
               {isMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
+                <XMarkIcon className="h-6 w-6 text-slate-600" />
               ) : (
-                <Bars3Icon className="h-6 w-6" />
+                <Bars3Icon className="h-6 w-6 text-slate-600" />
               )}
             </button>
           </div>
@@ -127,35 +141,44 @@ const Navbar = () => {
         
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-background-dark animate-fadeIn">
+          <div className="md:hidden py-4 border-t border-white/20 animate-slideInDown">
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/" 
-                className="text-text-secondary hover:text-primary font-medium transition-colors duration-300 py-2"
+                className="text-slate-600 hover:text-indigo-600 font-medium transition-colors duration-300 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
+              
               <Link 
                 to="/create" 
-                className="btn btn-primary px-6 py-2 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 text-center"
+                className="btn btn-primary justify-center"
                 onClick={() => setIsMenuOpen(false)}
               >
+                <SparklesIcon className="icon-sm" />
                 Create Wish
               </Link>
+              
               {/* User Profile/Sign In for Mobile */}
               {user ? (
                 <>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     My Wishes
                   </Link>
                   <button
-                    onClick={async () => { setLoggingOut(true); await logout(); setIsMenuOpen(false); navigate('/'); setLoggingOut(false); }}
-                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                    onClick={async () => { 
+                      setLoggingOut(true); 
+                      await logout(); 
+                      setIsMenuOpen(false); 
+                      navigate('/'); 
+                      setLoggingOut(false); 
+                    }}
+                    className="block w-full text-left px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors duration-200 disabled:opacity-50"
                     disabled={loggingOut}
                   >
                     {loggingOut ? 'Logging out...' : 'Logout'}
@@ -164,7 +187,7 @@ const Navbar = () => {
               ) : (
                 <button
                   onClick={() => { navigate('/login'); setIsMenuOpen(false); }}
-                  className="btn btn-primary text-sm md:text-base px-4 md:px-6 py-2 rounded-full"
+                  className="btn btn-outline justify-center"
                 >
                   Sign in
                 </button>
@@ -177,4 +200,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ShareIcon, ArrowLeftIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { 
+  ShareIcon, 
+  ArrowLeftIcon, 
+  LinkIcon,
+  ClipboardIcon,
+  EnvelopeIcon,
+  ChatBubbleLeftIcon
+} from '@heroicons/react/24/outline';
 import { SparklesIcon } from '@heroicons/react/24/solid';
 import WishDisplay from './WishDisplay';
-import SimpleShareOptions from '../components/SimpleShareOptions';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -13,7 +19,7 @@ interface WishTemplate {
   preview: string;
   description: string;
   bgClass: string;
-  animation: string;
+  color: string;
 }
 
 interface Wish {
@@ -70,30 +76,66 @@ const ViewWish = () => {
     }
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const shareViaEmail = () => {
+    const subject = encodeURIComponent(`🎉 Special Birthday Wish for ${wish?.recipientName}!`);
+    const body = encodeURIComponent(`I created a special birthday wish for ${wish?.recipientName}! Check it out: ${shortUrl || window.location.href}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const shareViaWhatsApp = () => {
+    const text = encodeURIComponent(`🎉 Check out this special birthday wish for ${wish?.recipientName}! ${shortUrl || window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
   useEffect(() => {
     const fetchWish = async () => {
-      const docRef = doc(db, "wishes", id || "");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const wishData = docSnap.data() as any;
-        setWish({ id: docSnap.id, ...(wishData as Omit<Wish, "id">) });
-        if (wishData.shortUrl) {
-          setShortUrl(wishData.shortUrl);
-        }
-      } else {
-        setWish(null);
+      if (!id) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        const docRef = doc(db, "wishes", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const wishData = docSnap.data() as any;
+          setWish({ id: docSnap.id, ...(wishData as Omit<Wish, "id">) });
+          if (wishData.shortUrl) {
+            setShortUrl(wishData.shortUrl);
+          }
+        } else {
+          setWish(null);
+        }
+      } catch (error) {
+        console.error('Error fetching wish:', error);
+        setWish(null);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchWish();
   }, [id]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse-slow text-center">
-          <SparklesIcon className="h-12 w-12 text-primary mx-auto mb-4" />
-          <p className="text-gray-600">Loading your special wish...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <div className="text-center animate-pulse-soft">
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-glow">
+            <SparklesIcon className="h-8 w-8 text-white" />
+          </div>
+          <p className="text-white text-lg">Loading your magical wish...</p>
         </div>
       </div>
     );
@@ -101,43 +143,47 @@ const ViewWish = () => {
 
   if (!wish) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white/80 rounded-3xl shadow-2xl p-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Wish Not Found</h1>
-          <p className="text-gray-600 mb-8">Sorry, we couldn't find the wish you're looking for.</p>
-          <Link 
-            to="/create" 
-            className="btn btn-primary px-6 py-2 rounded-full"
-          >
-            Create a New Wish
-          </Link>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50">
+        <div className="card-elevated text-center max-w-md mx-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <SparklesIcon className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">Wish Not Found</h1>
+          <p className="text-slate-600 mb-8">Sorry, we couldn't find the wish you're looking for. It may have been removed or the link might be incorrect.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/" className="btn btn-secondary">
+              <ArrowLeftIcon className="icon-sm" />
+              Go Home
+            </Link>
+            <Link to="/create" className="btn btn-primary">
+              <SparklesIcon className="icon-sm" />
+              Create New Wish
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  const borderColor = wish.template?.name === 'Love'
-    ? 'border-pink-400'
-    : wish.template?.name === 'Modern'
-      ? 'border-blue-400'
-      : 'border-white/30';
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#22223B] via-[#4A4E69] to-[#9A8C98] px-2 sm:px-4 md:px-8 overflow-x-hidden" style={{ minHeight: '110vh' }}>
-      <div className={`relative w-full max-w-4xl min-h-[70vh] mx-auto rounded-3xl shadow-2xl bg-[#F2E9E4] backdrop-blur-lg border-4 ${borderColor} p-2 sm:p-6 md:p-12 flex flex-col justify-center items-center overflow-hidden box-border`}>
-        {/* Glow effect */}
-        <div className="absolute -inset-4 sm:-inset-8 md:-inset-12 rounded-3xl bg-[#9A8C98]/30 blur-2xl z-0 pointer-events-none"></div>
-        {/* Back button */}
-        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-          <Link 
-            to="/"
-            className="inline-flex items-center bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-full text-primary hover:text-secondary transition-colors shadow-md"
-          >
-            <ArrowLeftIcon className="icon-sm mr-2" />
-            Back to Home
-          </Link>
-        </div>
-        <div className="relative z-10 w-full flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-pattern-dots opacity-10"></div>
+      
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-50">
+        <Link 
+          to="/"
+          className="glass-strong px-4 py-2 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2"
+        >
+          <ArrowLeftIcon className="icon-sm" />
+          <span className="hidden sm:inline">Back to Home</span>
+        </Link>
+      </div>
+
+      {/* Main Content */}
+      <div className="container-fluid section-padding flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-4xl">
           <WishDisplay 
             template={wish.template}
             message={wish.message}
@@ -150,63 +196,107 @@ const ViewWish = () => {
           />
         </div>
       </div>
-      {/* Share and Create Buttons */}
-      <div className="flex flex-wrap flex-col sm:flex-row justify-center gap-2 mt-8 w-full max-w-2xl px-2">
-        <button 
-          onClick={() => setShowShareOptions(!showShareOptions)}
-          className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-        >
-          <ShareIcon className="icon-sm mr-2" />
-          Share This Wish
-        </button>
-        {!shortUrl ? (
-          <button
-            onClick={() => generateTinyUrl(window.location.href)}
-            disabled={generatingTinyUrl}
-            className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 w-full sm:w-auto"
+
+      {/* Action Buttons */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="flex flex-wrap justify-center gap-3 px-4">
+          {/* Share Button */}
+          <button 
+            onClick={() => setShowShareOptions(!showShareOptions)}
+            className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large"
           >
-            <LinkIcon className="icon-sm mr-2" />
-            {generatingTinyUrl ? "Generating..." : "Get TinyURL"}
+            <ShareIcon className="icon-sm" />
+            <span className="hidden sm:inline">Share</span>
           </button>
-        ) : (
+
+          {/* Copy Link Button */}
           <button
-            onClick={() => {
-              navigator.clipboard.writeText(shortUrl);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className="btn btn-secondary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
+            onClick={() => copyToClipboard(shortUrl || window.location.href)}
+            className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large"
           >
-            {copied ? "Copied!" : "Copy TinyURL"}
+            <ClipboardIcon className="icon-sm" />
+            <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
           </button>
-        )}
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent('Check out this birthday wish! ' + (shortUrl || window.location.href))}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-success rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-        >
-          Share on WhatsApp
-        </a>
-        <Link 
-          to="/create" 
-          className="btn btn-primary rounded-full px-6 py-2 text-sm mb-2 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-        >
-          <SparklesIcon className="icon-sm mr-2" />
-          Create Another
-        </Link>
+
+          {/* Generate TinyURL Button */}
+          {!shortUrl && (
+            <button
+              onClick={() => generateTinyUrl(window.location.href)}
+              disabled={generatingTinyUrl}
+              className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large disabled:opacity-50"
+            >
+              <LinkIcon className="icon-sm" />
+              <span className="hidden sm:inline">
+                {generatingTinyUrl ? 'Generating...' : 'Get Short Link'}
+              </span>
+            </button>
+          )}
+
+          {/* WhatsApp Share */}
+          <button
+            onClick={shareViaWhatsApp}
+            className="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-xl text-white transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+          >
+            <ChatBubbleLeftIcon className="icon-sm" />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
+
+          {/* Create Another */}
+          <Link 
+            to="/create" 
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 px-6 py-3 rounded-xl text-white transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+          >
+            <SparklesIcon className="icon-sm" />
+            <span className="hidden sm:inline">Create Another</span>
+          </Link>
+        </div>
       </div>
-      {/* Share Options Popup */}
+
+      {/* Share Options Modal */}
       {showShareOptions && (
-        <div className="absolute left-0 right-0 mx-auto mt-4 z-10 w-full max-w-xs">
-          <SimpleShareOptions 
-            onClose={() => setShowShareOptions(false)} 
-            shortUrl={shortUrl || window.location.href}
-          />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="card-elevated max-w-sm w-full animate-scaleIn">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold">Share This Wish</h3>
+              <button 
+                onClick={() => setShowShareOptions(false)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+              >
+                <span className="sr-only">Close</span>
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <button 
+                onClick={() => copyToClipboard(shortUrl || window.location.href)}
+                className="w-full btn btn-secondary justify-start"
+              >
+                <ClipboardIcon className="icon-sm" />
+                {copied ? 'Copied!' : 'Copy Link'}
+              </button>
+              
+              <button 
+                onClick={shareViaEmail}
+                className="w-full btn btn-secondary justify-start"
+              >
+                <EnvelopeIcon className="icon-sm" />
+                Share via Email
+              </button>
+
+              <button 
+                onClick={shareViaWhatsApp}
+                className="w-full btn btn-success justify-start"
+              >
+                <ChatBubbleLeftIcon className="icon-sm" />
+                Share on WhatsApp
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default ViewWish; 
+export default ViewWish;
