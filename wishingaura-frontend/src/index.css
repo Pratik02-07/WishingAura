@@ -120,6 +120,22 @@
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;
   }
+
+  .animate-rainbow {
+    animation: rainbow 3s ease-in-out infinite;
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 2s ease-in-out infinite;
+  }
   
   /* Text effects */
   .text-gradient {
@@ -135,7 +151,7 @@
   }
   
   .text-shadow-glow {
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.5), 0 0 40px rgba(99, 102, 241, 0.3);
   }
   
   /* Loading states */
@@ -215,6 +231,38 @@
     }
     to {
       box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+    }
+  }
+
+  @keyframes rainbow {
+    0% { color: #ff0000; }
+    16.66% { color: #ff8000; }
+    33.33% { color: #ffff00; }
+    50% { color: #00ff00; }
+    66.66% { color: #0080ff; }
+    83.33% { color: #8000ff; }
+    100% { color: #ff0000; }
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+  }
+
+  @keyframes sparkle {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1) rotate(0deg);
+    }
+    50% { 
+      opacity: 0.7; 
+      transform: scale(1.2) rotate(180deg);
     }
   }
   

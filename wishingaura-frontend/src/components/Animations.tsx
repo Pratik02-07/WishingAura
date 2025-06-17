@@ -2,213 +2,295 @@ import React, { useEffect, useState, useRef } from 'react';
 
 interface ParticleSystemProps {
   active: boolean;
-  type: 'elegant' | 'geometric' | 'light';
+  type: 'elegant' | 'geometric' | 'light' | 'hearts' | 'stars' | 'confetti';
   density: number;
 }
 
 export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, type, density }) => {
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([]);
+  const [particles, setParticles] = useState<Array<{ 
+    id: number; 
+    x: number; 
+    y: number; 
+    size: number; 
+    delay: number;
+    rotation: number;
+    speed: number;
+    color: string;
+  }>>([]);
 
   useEffect(() => {
     if (active) {
+      const colors = {
+        elegant: ['rgba(255,255,255,0.8)', 'rgba(147,197,253,0.6)', 'rgba(196,181,253,0.6)'],
+        geometric: ['rgba(59,130,246,0.7)', 'rgba(147,51,234,0.7)', 'rgba(236,72,153,0.7)'],
+        light: ['rgba(251,191,36,0.8)', 'rgba(248,113,113,0.8)', 'rgba(34,197,94,0.8)'],
+        hearts: ['rgba(244,63,94,0.9)', 'rgba(236,72,153,0.9)', 'rgba(219,39,119,0.9)'],
+        stars: ['rgba(251,191,36,0.9)', 'rgba(245,158,11,0.9)', 'rgba(217,119,6,0.9)'],
+        confetti: ['rgba(239,68,68,0.9)', 'rgba(34,197,94,0.9)', 'rgba(59,130,246,0.9)', 'rgba(251,191,36,0.9)', 'rgba(147,51,234,0.9)']
+      };
+
       const newParticles = Array.from({ length: density }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 4 + 2,
-        delay: Math.random() * 3
+        size: Math.random() * 6 + 2,
+        delay: Math.random() * 5,
+        rotation: Math.random() * 360,
+        speed: Math.random() * 3 + 1,
+        color: colors[type][Math.floor(Math.random() * colors[type].length)]
       }));
       setParticles(newParticles);
     }
-  }, [active, density]);
+  }, [active, density, type]);
 
   if (!active) return null;
 
+  const getParticleShape = (particleType: string) => {
+    switch (particleType) {
+      case 'hearts':
+        return '❤️';
+      case 'stars':
+        return '⭐';
+      case 'confetti':
+        return '';
+      default:
+        return '';
+    }
+  };
+
   const getParticleClass = () => {
+    const baseClasses = 'absolute pointer-events-none';
     switch (type) {
       case 'elegant':
-        return 'bg-white/30 rounded-full animate-pulse';
+        return `${baseClasses} rounded-full animate-pulse`;
       case 'geometric':
-        return 'bg-blue-400/40 rotate-45 animate-spin';
+        return `${baseClasses} rotate-45 animate-spin`;
       case 'light':
-        return 'bg-yellow-300/50 rounded-full animate-bounce';
+        return `${baseClasses} rounded-full animate-bounce`;
+      case 'hearts':
+        return `${baseClasses} animate-pulse`;
+      case 'stars':
+        return `${baseClasses} animate-spin`;
+      case 'confetti':
+        return `${baseClasses} animate-bounce`;
       default:
-        return 'bg-white/30 rounded-full animate-pulse';
+        return `${baseClasses} rounded-full animate-pulse`;
     }
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className={`absolute ${getParticleClass()}`}
+          className={getParticleClass()}
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            animationDelay: `${particle.delay}s`
+            width: type === 'hearts' || type === 'stars' ? 'auto' : `${particle.size}px`,
+            height: type === 'hearts' || type === 'stars' ? 'auto' : `${particle.size}px`,
+            backgroundColor: type === 'hearts' || type === 'stars' ? 'transparent' : particle.color,
+            animationDelay: `${particle.delay}s`,
+            animationDuration: `${particle.speed}s`,
+            transform: `rotate(${particle.rotation}deg)`,
+            fontSize: type === 'hearts' || type === 'stars' ? `${particle.size * 2}px` : 'inherit'
           }}
-        />
+        >
+          {getParticleShape(type)}
+        </div>
       ))}
     </div>
   );
 };
 
-interface GradientBackgroundProps {
+interface FloatingElementsProps {
   active: boolean;
-  intensity: 'low' | 'medium' | 'high';
-  colorScheme: 'warm' | 'cool' | 'primary' | 'neutral';
+  type: 'balloons' | 'gifts' | 'cakes' | 'fireworks';
 }
 
-export const GradientBackground: React.FC<GradientBackgroundProps> = ({ active, intensity, colorScheme }) => {
+export const FloatingElements: React.FC<FloatingElementsProps> = ({ active, type }) => {
+  const [elements, setElements] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    delay: number;
+    duration: number;
+    emoji: string;
+    size: number;
+  }>>([]);
+
+  useEffect(() => {
+    if (active) {
+      const emojiMap = {
+        balloons: ['🎈', '🎀', '🎊'],
+        gifts: ['🎁', '🎀', '💝'],
+        cakes: ['🎂', '🧁', '🍰'],
+        fireworks: ['🎆', '🎇', '✨']
+      };
+
+      const newElements = Array.from({ length: 12 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 90 + 5,
+        y: Math.random() * 90 + 5,
+        delay: Math.random() * 3,
+        duration: Math.random() * 4 + 6,
+        emoji: emojiMap[type][Math.floor(Math.random() * emojiMap[type].length)],
+        size: Math.random() * 20 + 20
+      }));
+      setElements(newElements);
+    }
+  }, [active, type]);
+
   if (!active) return null;
 
-  const getGradientClass = () => {
-    const intensityMap = {
-      low: 'opacity-20',
-      medium: 'opacity-40',
-      high: 'opacity-60'
-    };
-
-    const colorMap = {
-      warm: 'from-red-500 via-pink-500 to-orange-500',
-      cool: 'from-blue-500 via-purple-500 to-indigo-500',
-      primary: 'from-purple-500 via-blue-500 to-cyan-500',
-      neutral: 'from-gray-500 via-slate-500 to-zinc-500'
-    };
-
-    return `bg-gradient-to-br ${colorMap[colorScheme]} ${intensityMap[intensity]}`;
-  };
-
   return (
-    <div className={`absolute inset-0 ${getGradientClass()} animate-pulse`} />
+    <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+      {elements.map((element) => (
+        <div
+          key={element.id}
+          className="absolute animate-float"
+          style={{
+            left: `${element.x}%`,
+            top: `${element.y}%`,
+            animationDelay: `${element.delay}s`,
+            animationDuration: `${element.duration}s`,
+            fontSize: `${element.size}px`,
+            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+          }}
+        >
+          {element.emoji}
+        </div>
+      ))}
+    </div>
   );
 };
 
-interface AnimatedTextProps {
+interface TextRevealProps {
   text: string;
-  effect: 'reveal' | 'fade' | 'typewriter' | 'blur' | 'slide';
   className?: string;
-  duration?: number;
   delay?: number;
-  staggerDelay?: number;
+  effect: 'typewriter' | 'fadeIn' | 'slideUp' | 'glow' | 'rainbow';
 }
 
-export const AnimatedText: React.FC<AnimatedTextProps> = ({ 
+export const TextReveal: React.FC<TextRevealProps> = ({ 
   text, 
-  effect, 
-  duration = 1, 
+  className = '', 
   delay = 0, 
-  staggerDelay = 0.05,
-  className = '' 
+  effect 
 }) => {
+  const [visibleChars, setVisibleChars] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
+      if (effect === 'typewriter') {
+        const interval = setInterval(() => {
+          setVisibleChars(prev => {
+            if (prev >= text.length) {
+              clearInterval(interval);
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 50);
+        return () => clearInterval(interval);
+      }
     }, delay * 1000);
 
     return () => clearTimeout(timer);
-  }, [delay]);
+  }, [text, delay, effect]);
 
   const getEffectClass = () => {
     switch (effect) {
-      case 'fade':
-        return isVisible ? 'opacity-100 animate-fade-in' : 'opacity-0';
-      case 'slide':
-        return isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0';
-      case 'blur':
-        return isVisible ? 'blur-none opacity-100' : 'blur-sm opacity-0';
-      case 'typewriter':
-        return isVisible ? 'animate-fade-in' : 'opacity-0';
+      case 'fadeIn':
+        return isVisible ? 'opacity-100 animate-fadeIn' : 'opacity-0';
+      case 'slideUp':
+        return isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0';
+      case 'glow':
+        return isVisible ? 'animate-glow opacity-100' : 'opacity-0';
+      case 'rainbow':
+        return isVisible ? 'animate-rainbow opacity-100' : 'opacity-0';
       default:
-        return isVisible ? 'animate-fade-in' : 'opacity-0';
+        return isVisible ? 'opacity-100' : 'opacity-0';
     }
   };
 
   if (effect === 'typewriter') {
     return (
-      <span 
-        className={`${className} transition-all duration-${Math.round(duration * 1000)} ${getEffectClass()}`}
-        style={{ animationDelay: `${delay}s` }}
-      >
-        {text.split('').map((char, index) => (
-          <span
-            key={index}
-            className={isVisible ? 'opacity-100' : 'opacity-0'}
-            style={{
-              animationDelay: `${delay + (index * staggerDelay)}s`,
-              transition: 'opacity 0.1s ease-in-out'
-            }}
-          >
-            {char}
-          </span>
-        ))}
+      <span className={`${className} transition-all duration-300`}>
+        {text.slice(0, visibleChars)}
+        {visibleChars < text.length && (
+          <span className="animate-pulse">|</span>
+        )}
       </span>
     );
   }
 
   return (
-    <span 
-      className={`${className} transition-all duration-${Math.round(duration * 1000)} ${getEffectClass()}`}
-      style={{ transitionDelay: `${delay}s` }}
-    >
+    <span className={`${className} transition-all duration-1000 ${getEffectClass()}`}>
       {text}
     </span>
   );
 };
 
-interface LightEffectProps {
+interface MagicalBorderProps {
+  children: React.ReactNode;
   active: boolean;
-  type: 'glow' | 'spotlight' | 'ambient';
-  intensity: 'low' | 'medium' | 'high';
-  color: string;
+  color?: string;
 }
 
-export const LightEffect: React.FC<LightEffectProps> = ({ active, type, intensity, color }) => {
-  if (!active) return null;
-
-  const getIntensityValue = () => {
-    switch (intensity) {
-      case 'low': return 0.2;
-      case 'medium': return 0.4;
-      case 'high': return 0.6;
-      default: return 0.4;
-    }
-  };
-
-  const getEffectStyle = () => {
-    const alpha = getIntensityValue();
-    
-    switch (type) {
-      case 'glow':
-        return {
-          background: `radial-gradient(circle at center, ${color}${Math.round(alpha * 255).toString(16)} 0%, transparent 70%)`,
-          filter: 'blur(20px)'
-        };
-      case 'spotlight':
-        return {
-          background: `radial-gradient(ellipse at center, ${color}${Math.round(alpha * 255).toString(16)} 0%, transparent 50%)`,
-          filter: 'blur(10px)'
-        };
-      case 'ambient':
-        return {
-          background: `linear-gradient(45deg, ${color}${Math.round(alpha * 255).toString(16)}, transparent)`,
-          filter: 'blur(30px)'
-        };
-      default:
-        return {};
-    }
-  };
+export const MagicalBorder: React.FC<MagicalBorderProps> = ({ 
+  children, 
+  active, 
+  color = 'rgb(147, 51, 234)' 
+}) => {
+  if (!active) return <>{children}</>;
 
   return (
-    <div 
-      className="absolute inset-0 animate-pulse"
-      style={getEffectStyle()}
-    />
+    <div className="relative">
+      <div 
+        className="absolute inset-0 rounded-xl animate-spin"
+        style={{
+          background: `conic-gradient(from 0deg, transparent, ${color}, transparent)`,
+          padding: '2px'
+        }}
+      >
+        <div className="w-full h-full bg-gray-900 rounded-xl"></div>
+      </div>
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+interface PulsingHeartProps {
+  active: boolean;
+  size?: number;
+  color?: string;
+}
+
+export const PulsingHeart: React.FC<PulsingHeartProps> = ({ 
+  active, 
+  size = 40, 
+  color = '#ef4444' 
+}) => {
+  if (!active) return null;
+
+  return (
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20">
+      <div 
+        className="animate-ping"
+        style={{
+          fontSize: `${size}px`,
+          color: color,
+          animationDuration: '2s'
+        }}
+      >
+        ❤️
+      </div>
+    </div>
   );
 };
 
@@ -224,7 +306,6 @@ export const BalloonAnimation: React.FC = () => {
         const color = colors[i % colors.length];
         const zIndex = Math.floor(Math.random() * 5);
         
-        // Create balloon shape with gradient
         const balloonStyle = {
           width: size,
           height: size * 1.2,
@@ -237,7 +318,6 @@ export const BalloonAnimation: React.FC = () => {
           transform: `rotate(${Math.random() * 10 - 5}deg)`,
         };
         
-        // Create balloon knot
         const knotStyle = {
           position: 'absolute' as const,
           bottom: '-10px',
@@ -250,7 +330,6 @@ export const BalloonAnimation: React.FC = () => {
           boxShadow: 'inset -2px -2px 5px rgba(0,0,0,0.2)'
         };
         
-        // Create string
         const stringLength = 80 + Math.random() * 40;
         const stringStyle = {
           position: 'absolute' as const,
@@ -264,7 +343,6 @@ export const BalloonAnimation: React.FC = () => {
           zIndex: -1
         };
         
-        // Create shine effect
         const shineStyle = {
           position: 'absolute' as const,
           top: '20%',
@@ -300,5 +378,10 @@ export const BalloonAnimation: React.FC = () => {
 };
 
 export default {
+  ParticleSystem,
+  FloatingElements,
+  TextReveal,
+  MagicalBorder,
+  PulsingHeart,
   BalloonAnimation,
 };

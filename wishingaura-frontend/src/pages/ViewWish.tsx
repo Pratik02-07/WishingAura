@@ -44,6 +44,7 @@ const ViewWish = () => {
   const [copied, setCopied] = useState(false);
   const [shortUrl, setShortUrl] = useState<string | null>(null);
   const [generatingTinyUrl, setGeneratingTinyUrl] = useState(false);
+  const [showWelcomeAnimation, setShowWelcomeAnimation] = useState(true);
 
   const generateTinyUrl = async (longUrl: string) => {
     try {
@@ -62,7 +63,6 @@ const ViewWish = () => {
       const data = await response.json();
       if (data.data?.tiny_url) {
         setShortUrl(data.data.tiny_url);
-        // Update Firestore with the short URL
         if (id) {
           await updateDoc(doc(db, "wishes", id), {
             shortUrl: data.data.tiny_url
@@ -128,14 +128,52 @@ const ViewWish = () => {
     fetchWish();
   }, [id]);
 
+  // Hide welcome animation after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcomeAnimation(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-        <div className="text-center animate-pulse-soft">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-glow">
-            <SparklesIcon className="h-8 w-8 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+        {/* Animated background particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-float opacity-30"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${Math.random() * 3 + 4}s`
+              }}
+            >
+              {['✨', '🎉', '🎈', '💫', '⭐'][Math.floor(Math.random() * 5)]}
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center animate-pulse-soft relative z-10">
+          <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-glow shadow-2xl">
+            <SparklesIcon className="h-10 w-10 text-white animate-spin-slow" />
           </div>
-          <p className="text-white text-lg">Loading your magical wish...</p>
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white drop-shadow-lg">
+              ✨ Preparing Your Magical Wish ✨
+            </h2>
+            <p className="text-white/80 text-lg">
+              Something wonderful is about to appear...
+            </p>
+            <div className="flex justify-center space-x-2 mt-6">
+              <div className="w-3 h-3 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-3 h-3 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-3 h-3 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -143,19 +181,40 @@ const ViewWish = () => {
 
   if (!wish) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50">
-        <div className="card-elevated text-center max-w-md mx-4">
-          <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <SparklesIcon className="h-8 w-8 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50 relative overflow-hidden">
+        {/* Sad animation particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-float opacity-20"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${Math.random() * 2 + 3}s`
+              }}
+            >
+              😢
+            </div>
+          ))}
+        </div>
+        
+        <div className="card-elevated text-center max-w-md mx-4 relative z-10">
+          <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <SparklesIcon className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Wish Not Found</h1>
-          <p className="text-slate-600 mb-8">Sorry, we couldn't find the wish you're looking for. It may have been removed or the link might be incorrect.</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-4">Oops! Wish Not Found</h1>
+          <p className="text-slate-600 mb-8 leading-relaxed">
+            It seems this magical wish has disappeared into the digital cosmos. 
+            The link might be broken or the wish may have been removed.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/" className="btn btn-secondary">
+            <Link to="/" className="btn btn-secondary hover-lift">
               <ArrowLeftIcon className="icon-sm" />
-              Go Home
+              Return Home
             </Link>
-            <Link to="/create" className="btn btn-primary">
+            <Link to="/create" className="btn btn-primary hover-lift">
               <SparklesIcon className="icon-sm" />
               Create New Wish
             </Link>
@@ -167,17 +226,35 @@ const ViewWish = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
-      {/* Background Pattern */}
+      {/* Enhanced background pattern */}
       <div className="absolute inset-0 bg-pattern-dots opacity-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
       
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-50">
+      {/* Welcome animation overlay */}
+      {showWelcomeAnimation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn">
+          <div className="text-center text-white">
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <h2 className="text-3xl font-bold mb-2">Welcome to</h2>
+            <h1 className="text-4xl font-bold text-gradient mb-4">{wish.recipientName}'s</h1>
+            <h1 className="text-4xl font-bold">Birthday Wish!</h1>
+            <div className="mt-6 flex justify-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '0.3s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '0.6s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Back Button with enhanced styling */}
+      <div className="absolute top-6 left-6 z-40">
         <Link 
           to="/"
-          className="glass-strong px-4 py-2 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2"
+          className="glass-strong px-6 py-3 rounded-2xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-white/20"
         >
           <ArrowLeftIcon className="icon-sm" />
-          <span className="hidden sm:inline">Back to Home</span>
+          <span className="hidden sm:inline font-medium">Back to Home</span>
         </Link>
       </div>
 
@@ -197,25 +274,25 @@ const ViewWish = () => {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+      {/* Enhanced Action Buttons */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
         <div className="flex flex-wrap justify-center gap-3 px-4">
           {/* Share Button */}
           <button 
             onClick={() => setShowShareOptions(!showShareOptions)}
-            className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+            className="glass-strong px-6 py-4 rounded-2xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-white/20"
           >
             <ShareIcon className="icon-sm" />
-            <span className="hidden sm:inline">Share</span>
+            <span className="hidden sm:inline font-medium">Share Magic</span>
           </button>
 
           {/* Copy Link Button */}
           <button
             onClick={() => copyToClipboard(shortUrl || window.location.href)}
-            className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+            className="glass-strong px-6 py-4 rounded-2xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-white/20"
           >
             <ClipboardIcon className="icon-sm" />
-            <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
+            <span className="hidden sm:inline font-medium">{copied ? 'Copied! ✨' : 'Copy Link'}</span>
           </button>
 
           {/* Generate TinyURL Button */}
@@ -223,11 +300,11 @@ const ViewWish = () => {
             <button
               onClick={() => generateTinyUrl(window.location.href)}
               disabled={generatingTinyUrl}
-              className="glass-strong px-6 py-3 rounded-xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-2 shadow-large disabled:opacity-50"
+              className="glass-strong px-6 py-4 rounded-2xl text-white hover:bg-white/30 transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <LinkIcon className="icon-sm" />
-              <span className="hidden sm:inline">
-                {generatingTinyUrl ? 'Generating...' : 'Get Short Link'}
+              <span className="hidden sm:inline font-medium">
+                {generatingTinyUrl ? 'Creating Magic...' : 'Get Short Link'}
               </span>
             </button>
           )}
@@ -235,61 +312,61 @@ const ViewWish = () => {
           {/* WhatsApp Share */}
           <button
             onClick={shareViaWhatsApp}
-            className="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-xl text-white transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 px-6 py-4 rounded-2xl text-white transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-green-400/20"
           >
             <ChatBubbleLeftIcon className="icon-sm" />
-            <span className="hidden sm:inline">WhatsApp</span>
+            <span className="hidden sm:inline font-medium">WhatsApp</span>
           </button>
 
           {/* Create Another */}
           <Link 
             to="/create" 
-            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 px-6 py-3 rounded-xl text-white transition-all duration-300 inline-flex items-center gap-2 shadow-large"
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 px-6 py-4 rounded-2xl text-white transition-all duration-300 inline-flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-md border border-indigo-400/20"
           >
             <SparklesIcon className="icon-sm" />
-            <span className="hidden sm:inline">Create Another</span>
+            <span className="hidden sm:inline font-medium">Create Another</span>
           </Link>
         </div>
       </div>
 
-      {/* Share Options Modal */}
+      {/* Enhanced Share Options Modal */}
       {showShareOptions && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="card-elevated max-w-sm w-full animate-scaleIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="card-elevated max-w-sm w-full animate-scaleIn shadow-3xl border border-white/20">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold">Share This Wish</h3>
+              <h3 className="text-2xl font-bold text-gradient">Share This Magical Wish</h3>
               <button 
                 onClick={() => setShowShareOptions(false)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors duration-200 hover:scale-110"
               >
                 <span className="sr-only">Close</span>
-                ×
+                ✕
               </button>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button 
                 onClick={() => copyToClipboard(shortUrl || window.location.href)}
-                className="w-full btn btn-secondary justify-start"
+                className="w-full btn btn-secondary justify-start hover-lift shadow-lg"
               >
                 <ClipboardIcon className="icon-sm" />
-                {copied ? 'Copied!' : 'Copy Link'}
+                {copied ? 'Copied! ✨' : 'Copy Magical Link'}
               </button>
               
               <button 
                 onClick={shareViaEmail}
-                className="w-full btn btn-secondary justify-start"
+                className="w-full btn btn-secondary justify-start hover-lift shadow-lg"
               >
                 <EnvelopeIcon className="icon-sm" />
-                Share via Email
+                Send via Email 📧
               </button>
 
               <button 
                 onClick={shareViaWhatsApp}
-                className="w-full btn btn-success justify-start"
+                className="w-full btn btn-success justify-start hover-lift shadow-lg"
               >
                 <ChatBubbleLeftIcon className="icon-sm" />
-                Share on WhatsApp
+                Share on WhatsApp 💚
               </button>
             </div>
           </div>
