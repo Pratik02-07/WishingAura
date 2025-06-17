@@ -7,16 +7,21 @@ import Profile from '../pages/Profile';
 import Login from '../pages/Login';
 import { AuthProvider } from '../context/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
+import MaintenancePage from '../pages/MaintenancePage';
+
+const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: (
+    element: MAINTENANCE_MODE ? (
+      <MaintenancePage />
+    ) : (
       <AuthProvider>
         <App />
       </AuthProvider>
     ),
-    children: [
+    children: MAINTENANCE_MODE ? [] : [
       { path: '/', element: <Home /> },
       { path: '/login', element: <Login /> },
       {
